@@ -1,0 +1,151 @@
+﻿/*
+html {
+    box-sizing: border-box;
+}
+
+*, *::before, *::after {
+    box-sizing: inherit;
+}
+*/
+.no-list-style {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: #222;
+    color: #DDD;
+    margin: 0px 50px 0px 50px;
+}
+
+.bf-body-left {
+    display: inline-block;
+    padding: 10px 5px 0 0;
+}
+
+.bf-body-right {
+    display: inline-block;
+}
+
+h2.text-center {
+    color: #DDD;
+    margin: 10px 0;
+}
+
+.bf-code > textarea, #bf-results {
+    display: block;
+    font-family: 'Lucida Console', monospace;
+    font-size: 1.25rem;
+    color: #111;
+}
+.bf-code > input, .bf-code > button {
+    background-color: #222;
+    border: 2px solid darkgreen;
+    border-radius: 5px;
+    color: darkgreen;
+    margin: 10px;
+    width: 100px;
+}
+
+.bf-code > input:hover, .bf-code > button:hover {
+    background-color: #333;
+}
+
+.legend {
+    border: 5px solid #111;
+    background-color: #333;
+    color: #DDD;
+}
+    .legend li {
+        margin: 10px;       
+    }
+        .legend li > span {
+            display: inline-block;
+            background-color: #111;
+            height: 20px;
+            width: 20px;
+            margin: 0 5px;
+            text-align: center;
+        }
+
+.bf-options {
+    border: 5px solid #111;
+    background-color: #333;
+    color: #DDD;
+}
+    .bf-options > ul {
+        padding: 20px;
+    }
+        .bf-options > ul > li {
+            padding: 5px 0;
+        }
+
+.modal-content {
+    background-color: #333;
+    color: #EEE;
+    width: 100%;
+}
+
+.modal-body {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.modal-body-left {
+    flex: 1 0 10%;
+    border-right: 1px solid #EEE;
+}
+
+#modal-memory-dumps > li {
+    text-align: center;
+    margin: 0;
+    border-bottom: 1px solid #EEE;
+    cursor: pointer;
+}
+
+.modal-memory-item {
+    display: inline-block;
+    margin: 5px;
+}
+
+.modal-body-right {
+    flex: 9 0 90%;
+    padding-left: 20px;
+}
+
+#modal-hex-dump, #modal-ascii-dump, #modal-decimal-dump {
+    border: 2px solid darkgreen;
+    border-radius: 10px 0;
+    color: darkgreen;      
+    background-color: inherit;
+}
+
+.custom-radio-selected {
+    background-color: #222 !important;
+}
+
+.blocksize-buttons {
+    display: inline; 
+    margin: 0;
+    border: 2px solid #333;
+    background-color: #333;
+}
+    .blocksize-buttons.custom-radio-selected {
+        border-bottom: 2px solid darkgreen;       
+    }
+    .blocksize-buttons:hover {
+        background-color: #222;
+    }
+
+button.close {
+    background-color: #333;
+    color: #EEE;
+}
+
+input[type="number"] {
+    max-width: 100px;
+    background-color: #333;
+    color: #EEE;
+    text-align: center;
+}

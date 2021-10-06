@@ -1,0 +1,78 @@
+﻿<html>
+<head>
+    <link rel="stylesheet" href="styles/bootstrap.min.css">
+    <link rel="stylesheet" href="styles/bootstrap-theme.min.css">
+    <link rel="stylesheet" href="styles/bfinterpreter.css">
+    <script src="styles/jquery-3.1.1.slim.min.js" type="text/javascript"></script>
+    <script src="styles/bootstrap.min.js" type="text/javascript"></script>
+    <script src="build/bfmain.js" type="module" defer></script>
+</head>
+<body>
+<div>
+    <div class="bf-body-left">
+        <div class="bf-code">
+            <textarea rows="20" cols="100" placeholder="Code..." id="bf-code-text">+++++++++[>++++++++<-]>.$+.$</textarea>
+            <textarea rows="1" cols="100" placeholder="Input..." id="bf-code-input"></textarea>
+            <input type="button" value="Run" id="bf-code-execute" />
+            <button type="button" data-toggle="modal" data-target="#memory-modal" id="bf-memory-dump">
+                Memory
+            </button>
+        </div>
+        <textarea rows="2" cols="100" id="bf-results" placeholder="Output..."></textarea>
+    </div>
+    <div class="bf-body-right">
+        <h2 class="text-center">Brainfuck Interpreter</h2>
+        <div class="legend">
+            <ul class="no-list-style">
+                <li><span><b>></b></span> Move pointer one memory location forward</li>
+                <li><span><b><</b></span> Move pointer one memory location backward</li>
+                <li><span><b>+</b></span> Increment data at memory location by one</li>
+                <li><span><b>-</b></span> Decrement data at memory location by one</li>
+                <li><span><b>[</b></span> If memory location is 0, skip to ], else continue</li>
+                <li><span><b>]</b></span> If memory location is 0, continue, else skip to [</li>
+                <li><span><b>,</b></span> Read input character into memory location</li>
+                <li><span><b>.</b></span> Write output character from memory location</li>
+                <li><span><b>$</b></span> Memory dump for debugging</li>
+            </ul>
+        </div>
+        <div class="bf-options">
+            <ul class="no-list-style">
+                <li><input type="checkbox" id="bf-options-debug" checked/> Enable memory dump symbol</li>
+                <li><input type="checkbox" id="bf-options-output-convert"/> Automatic output conversion to ASCII</li>
+                <li><input type="checkbox" id="bf-options-memory-signed"/> Signed Memory</li>
+                <li>
+                    Block size (bytes):
+                    <input type="button" class="blocksize-buttons" id="bf-options-memory-blocksize-char" value="1" />
+                    <input type="button" class="blocksize-buttons" id="bf-options-memory-blocksize-int16" value="2" />
+                    <input type="button" class="blocksize-buttons" id="bf-options-memory-blocksize-int32" value="4" />
+                </li> 
+                <li>Memory size (blocks): <input type="number" min="1" max="1024" id="bf-options-memory-size" value="2" /></li>                              
+            </ul>
+        </div>
+    </div>
+    
+    <div id="memory-modal" class="modal fade">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">     
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>              
+                    <h3 class="modal-title">Memory Dumps</h3>
+                    <ul class="no-list-style text-right">
+                        <li><input type="button" id="modal-hex-dump" value="Hex" />
+                        <input type="button" id="modal-decimal-dump" value="Decimal" />                      
+                        <input type="button" id="modal-ascii-dump" value="ASCII" /></li>
+                    </ul>                   
+                </div>
+                <div class="modal-body">
+                    <div class="modal-body-left">
+                        <ul class="no-list-style" id="modal-memory-dumps"></ul>
+                    </div>
+                    <div class="modal-body-right">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
