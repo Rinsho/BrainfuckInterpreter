@@ -14,7 +14,7 @@ export class BFInterpreter {
         );
     }
 
-    public Execute(code: string, input: InputStream): { Output: string, Debug: number[][] } {
+    public Execute(code: string, input: InputStream): { Output: OutputStream, Debug: DebugInfo } {
         let context = {
             Memory: this._memory,
             Pointer: new Pointer(this._memory),
@@ -24,8 +24,8 @@ export class BFInterpreter {
         };
         this._tokenizer.Tokenize(code, context).Execute(context);
         return {
-            Output: context.Output.GetString(),
-            Debug: context.Debug.GetDebugInfo()
+            Output: context.Output,
+            Debug: context.Debug
         }
     }
 }

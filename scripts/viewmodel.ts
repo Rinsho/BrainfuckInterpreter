@@ -1,5 +1,5 @@
 import { BFInterpreter } from './bfinterpreter.js';
-import { InputStream, OutputStream } from './executioncontext.js';
+import { DebugInfo, InputStream, OutputStream } from './executioncontext.js';
 import { MemoryBlockSizes, Memory, SignedMemory } from './memory.js';
 
 interface IHTMLValueElement extends HTMLElement {
@@ -108,8 +108,8 @@ export class DebugViewModel {
     private _dumpListCleanup: (() => void) | null = null;
     private _selectedDumpType: DumpTypes = "Hex";
     private _selectedDumpNumber: number = 0;
-    private _debugInfo: number[][] = [];
-    set DebugInfo(info: number[][]) {
+    private _debugInfo: DebugInfo = new DebugInfo();
+    set DebugInfo(info: DebugInfo) {
         if (info) {
             this._debugInfo = info;
             this.CreateDumpList();
@@ -126,19 +126,23 @@ export class DebugViewModel {
     ) {
         this.DisplayMemory = (dumpNumber: number) => {
             Empty(memoryDumpBody);
-            if (this._debugInfo.length === 0)
+            let rawDebugInfo = this._debugInfo.AsArray();
+            if (rawDebugInfo.length === 0)
                 return;
             
-            for (let i = 0; i < this._debugInfo[dumpNumber].length; i++) {
-                let item = this._debugInfo[dumpNumber][i];
+            for (let i = 0; i < rawDebugInfo[dumpNumber].length; i++) {
+                let item = rawDebugInfo[dumpNumber][i];
                 let formattedItem: string;
+                let padding: string;
                 switch (this._selectedDumpType) {
                     case "Decimal":
-                        formattedItem = ('0000000000' + item).substring(item.toString().length);
+                        padding = '0'.repeat(Math.ceil(Math.log2(this._debugInfo.BlockSize) / Math.log2(10)));
+                        formattedItem = (padding + item).substring(item.toString().length);
                         break;
                     case "Hex":
+                        padding = '0'.repeat(Math.ceil(Math.log2(this._debugInfo.BlockSize) / Math.log2(16)));
                         formattedItem = item.toString(16);
-                        formattedItem = ('0000' + formattedItem).substring(formattedItem.length);
+                        formattedItem = (padding + formattedItem).substring(formattedItem.length);
                         break;
                     case "ASCII":
                         formattedItem = String.fromCharCode(item);
@@ -162,10 +166,12 @@ export class DebugViewModel {
             }
             Empty(memoryDumpList);
             Empty(memoryDumpBody);
-            if (this._debugInfo.length === 0)
+
+            let rawDebugInfo = this._debugInfo.AsArray();
+            if (rawDebugInfo.length === 0)
                 return;
 
-            for (let i = 0; i < this._debugInfo.length; i++)
+            for (let i = 0; i < rawDebugInfo.length; i++)
             {
                 let listItem = document.createElement('li');
                 listItem.textContent = `Dump #${i}`;
@@ -194,7 +200,7 @@ export class DebugViewModel {
     }
 
     public Reset(): void {
-        this.DebugInfo = [];
+        this.DebugInfo = new DebugInfo();
     }
 }
 
@@ -216,7 +222,7 @@ export function InterpreterElementsSetup(
             interpreter.Execute(
                 CodeElement.value, 
                 new InputStream(InputElement.value));
-        OutputElement.value = output;
+        OutputElement.value = output.GetString();
         if (Options.IsDebugEnabled)
             Debug.DebugInfo = debugInfo;
     });

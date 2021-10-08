@@ -13,13 +13,13 @@ export class InputStream {
 
     constructor(private _input: string) { }
 
-    ReadNextCharCode(): number {
+    public ReadNextCharCode(): number {
         if (this._current > this._input.length - 1)
             return -1;
         return this._input.charCodeAt(this._current++);
     }
 
-    ReadNextChar(): number {
+    public ReadNextChar(): number {
         return this.ReadNextCharCode() - 48;
     }
 }
@@ -29,18 +29,18 @@ export class OutputStream {
 
     constructor(private _convertToAscii: boolean) { }
 
-    WriteNextCharCode(charCode: number): string {
+    public WriteNextCharCode(charCode: number): string {
         return this.WriteNextChar(String.fromCharCode(charCode));
     }
 
-    WriteNextChar(char: string): string {
+    public WriteNextChar(char: string): string {
         if (this._convertToAscii)
             char = String.fromCharCode(char.charCodeAt(0) + 48);
         this._output = this._output.concat(char);
         return this._output;
     }
 
-    GetString(): string {
+    public GetString(): string {
         return this._output;
     }
 }
@@ -48,13 +48,16 @@ export class OutputStream {
 export class DebugInfo {
     private _debugInfo: Memory[] = [];
     private _current: number = 0;
+    public get BlockSize() {
+        return this._debugInfo[0]?.BlockSize ?? 1;
+    }
 
-    AddDebugInfo(memoryCopy: Memory): void {
+    public AddDebugInfo(memoryCopy: Memory): void {
         if (memoryCopy)
             this._debugInfo[this._current++] = memoryCopy;
     }
 
-    GetDebugInfo(): number[][] {
+    public AsArray(): number[][] {
         let info = [];
         for (let debugItem of this._debugInfo)
             info.push(debugItem.AsArray());

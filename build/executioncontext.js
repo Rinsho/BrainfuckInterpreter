@@ -35,11 +35,15 @@ export class DebugInfo {
         this._debugInfo = [];
         this._current = 0;
     }
+    get BlockSize() {
+        var _a, _b;
+        return (_b = (_a = this._debugInfo[0]) === null || _a === void 0 ? void 0 : _a.BlockSize) !== null && _b !== void 0 ? _b : 1;
+    }
     AddDebugInfo(memoryCopy) {
         if (memoryCopy)
             this._debugInfo[this._current++] = memoryCopy;
     }
-    GetDebugInfo() {
+    AsArray() {
         let info = [];
         for (let debugItem of this._debugInfo)
             info.push(debugItem.AsArray());

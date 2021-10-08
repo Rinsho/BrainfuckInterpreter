@@ -1,5 +1,5 @@
 import { BFInterpreter } from './bfinterpreter.js';
-import { OutputStream } from './executioncontext.js';
+import { DebugInfo, InputStream, OutputStream } from './executioncontext.js';
 import { MemoryBlockSizes, Memory, SignedMemory } from './memory.js';
 function Empty(element) {
     while (element.lastChild)
@@ -77,21 +77,25 @@ export class DebugViewModel {
         this._dumpListCleanup = null;
         this._selectedDumpType = "Hex";
         this._selectedDumpNumber = 0;
-        this._debugInfo = [];
+        this._debugInfo = new DebugInfo();
         this.DisplayMemory = (dumpNumber) => {
             Empty(memoryDumpBody);
-            if (this._debugInfo.length === 0)
+            let rawDebugInfo = this._debugInfo.AsArray();
+            if (rawDebugInfo.length === 0)
                 return;
-            for (let i = 0; i < this._debugInfo[dumpNumber].length; i++) {
-                let item = this._debugInfo[dumpNumber][i];
+            for (let i = 0; i < rawDebugInfo[dumpNumber].length; i++) {
+                let item = rawDebugInfo[dumpNumber][i];
                 let formattedItem;
+                let padding;
                 switch (this._selectedDumpType) {
                     case "Decimal":
-                        formattedItem = ('0000000000' + item).substring(item.toString().length);
+                        padding = '0'.repeat(Math.ceil(Math.log2(this._debugInfo.BlockSize) / Math.log2(10)));
+                        formattedItem = (padding + item).substring(item.toString().length);
                         break;
                     case "Hex":
+                        padding = '0'.repeat(Math.ceil(Math.log2(this._debugInfo.BlockSize) / Math.log2(16)));
                         formattedItem = item.toString(16);
-                        formattedItem = ('0000' + formattedItem).substring(formattedItem.length);
+                        formattedItem = (padding + formattedItem).substring(formattedItem.length);
                         break;
                     case "ASCII":
                         formattedItem = String.fromCharCode(item);
@@ -112,9 +116,10 @@ export class DebugViewModel {
             }
             Empty(memoryDumpList);
             Empty(memoryDumpBody);
-            if (this._debugInfo.length === 0)
+            let rawDebugInfo = this._debugInfo.AsArray();
+            if (rawDebugInfo.length === 0)
                 return;
-            for (let i = 0; i < this._debugInfo.length; i++) {
+            for (let i = 0; i < rawDebugInfo.length; i++) {
                 let listItem = document.createElement('li');
                 listItem.textContent = `Dump #${i}`;
                 listItem.value = i;
@@ -140,7 +145,7 @@ export class DebugViewModel {
         }
     }
     Reset() {
-        this.DebugInfo = [];
+        this.DebugInfo = new DebugInfo();
     }
 }
 export function InterpreterElementsSetup(CodeElement, InputElement, OutputElement, SubmitElement, Options, Debug) {
@@ -150,8 +155,8 @@ export function InterpreterElementsSetup(CodeElement, InputElement, OutputElemen
             new SignedMemory(Options.MemorySize, Options.BlockSize)
             : new Memory(Options.MemorySize, Options.BlockSize);
         let interpreter = new BFInterpreter(memory, new OutputStream(Options.EnableAsciiOutput));
-        let { Output: output, Debug: debugInfo } = interpreter.Execute(CodeElement.value, InputElement.value);
-        OutputElement.value = output;
+        let { Output: output, Debug: debugInfo } = interpreter.Execute(CodeElement.value, new InputStream(InputElement.value));
+        OutputElement.value = output.GetString();
         if (Options.IsDebugEnabled)
             Debug.DebugInfo = debugInfo;
     });
