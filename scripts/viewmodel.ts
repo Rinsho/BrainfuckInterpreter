@@ -136,11 +136,19 @@ export class DebugViewModel {
                 let padding: string;
                 switch (this._selectedDumpType) {
                     case "Decimal":
-                        padding = '0'.repeat(Math.ceil(Math.log2(this._debugInfo.BlockSize) / Math.log2(10)));
+                        padding = '0'.repeat(
+                            Math.ceil(
+                                Math.log2(this._debugInfo.BlockSize) / Math.log2(10)
+                            )
+                        );
                         formattedItem = (padding + item).substring(item.toString().length);
                         break;
                     case "Hex":
-                        padding = '0'.repeat(Math.ceil(Math.log2(this._debugInfo.BlockSize) / Math.log2(16)));
+                        padding = '0'.repeat(
+                            Math.ceil(
+                                Math.log2(this._debugInfo.BlockSize) / Math.log2(16)
+                            )
+                        );
                         formattedItem = item.toString(16);
                         formattedItem = (padding + formattedItem).substring(formattedItem.length);
                         break;
