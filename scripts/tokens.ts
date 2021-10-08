@@ -21,12 +21,11 @@ export class Scope implements IToken {
         this._hasActiveScope = active;
     }
     
-
     public Add(token: IToken): void {             
         let mostRecentToken = this._tokens[this._tokens.length - 1] as Scope;
         if (mostRecentToken?.HasActiveScope)
             mostRecentToken.Add(token);
-        else if (token instanceof EndScopeToken)
+        else if (token === EndScopeToken)
             this.HasActiveScope = false;
         else
             this._tokens.push(token);

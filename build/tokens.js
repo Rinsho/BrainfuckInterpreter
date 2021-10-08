@@ -1,88 +1,93 @@
+export class Scope {
+    constructor() {
+        this._tokens = [];
+        this._hasActiveScope = true;
+    }
+    get HasActiveScope() {
+        return this._hasActiveScope;
+    }
+    set HasActiveScope(active) {
+        if (!active) {
+            let mostRecentToken = this._tokens[this._tokens.length - 1];
+            if (mostRecentToken === null || mostRecentToken === void 0 ? void 0 : mostRecentToken.HasActiveScope)
+                active = true;
+        }
+        this._hasActiveScope = active;
+    }
+    Add(token) {
+        let mostRecentToken = this._tokens[this._tokens.length - 1];
+        if (mostRecentToken === null || mostRecentToken === void 0 ? void 0 : mostRecentToken.HasActiveScope)
+            mostRecentToken.Add(token);
+        else if (token === EndScopeToken)
+            this.HasActiveScope = false;
+        else
+            this._tokens.push(token);
+    }
+    Execute(context) {
+        for (let token of this._tokens)
+            token.Execute(context);
+    }
+}
+export class WhileLoopToken extends Scope {
+    Execute(context) {
+        let val = context.Pointer.GetValue();
+        while (val !== 0) {
+            super.Execute(context);
+            val = context.Pointer.GetValue();
+        }
+    }
+}
+WhileLoopToken.Symbol = '[';
+export class EndScopeToken {
+    //Symbol has no effects related to state; purely for control flow.
+    static Execute() { }
+}
+EndScopeToken.Symbol = ']';
 export class IncrementValueToken {
-    constructor(_pointer) {
-        this._pointer = _pointer;
-    }
-    Execute() {
-        this._pointer.Increment();
+    static Execute(context) {
+        context.Pointer.Increment();
     }
 }
-IncrementValueToken.StartChar = '+';
+IncrementValueToken.Symbol = '+';
 export class DecrementValueToken {
-    constructor(_pointer) {
-        this._pointer = _pointer;
-    }
-    Execute() {
-        this._pointer.Decrement();
+    static Execute(context) {
+        context.Pointer.Decrement();
     }
 }
-DecrementValueToken.StartChar = '-';
+DecrementValueToken.Symbol = '-';
 export class IncrementPointerToken {
-    constructor(_pointer) {
-        this._pointer = _pointer;
-    }
-    Execute() {
-        this._pointer.MoveRight();
+    static Execute(context) {
+        context.Pointer.MoveRight();
     }
 }
-IncrementPointerToken.StartChar = '>';
+IncrementPointerToken.Symbol = '>';
 export class DecrementPointerToken {
-    constructor(_pointer) {
-        this._pointer = _pointer;
-    }
-    Execute() {
-        this._pointer.MoveLeft();
+    static Execute(context) {
+        context.Pointer.MoveLeft();
     }
 }
-DecrementPointerToken.StartChar = '<';
+DecrementPointerToken.Symbol = '<';
 export class ReadInputToken {
-    constructor(_pointer, _input) {
-        this._pointer = _pointer;
-        this._input = _input;
-    }
-    Execute() {
-        let charCode = this._input.ReadNextChar();
+    static Execute(context) {
+        let charCode = context.Input.ReadNextChar();
         while (charCode > 0) {
-            this._pointer.Increment();
+            context.Pointer.Increment();
             charCode--;
         }
     }
 }
-ReadInputToken.StartChar = ',';
+ReadInputToken.Symbol = ',';
 export class WriteOutputToken {
-    constructor(_pointer, _output) {
-        this._pointer = _pointer;
-        this._output = _output;
-    }
-    Execute() {
-        let charCode = this._pointer.GetValue();
-        this._output.WriteNextCharCode(charCode);
+    static Execute(context) {
+        let charCode = context.Pointer.GetValue();
+        context.Output.WriteNextCharCode(charCode);
     }
 }
-WriteOutputToken.StartChar = '.';
-export class WhileLoopToken {
-    constructor(_pointer, _tokens) {
-        this._pointer = _pointer;
-        this._tokens = _tokens;
-    }
-    Execute() {
-        let val = this._pointer.GetValue();
-        while (val !== 0) {
-            for (let token of this._tokens)
-                token.Execute();
-            val = this._pointer.GetValue();
-        }
-    }
-}
-WhileLoopToken.StartChar = '[';
-WhileLoopToken.EndChar = ']';
+WriteOutputToken.Symbol = '.';
 export class MemoryDumpToken {
-    constructor(_memory, _debug) {
-        this._memory = _memory;
-        this._debug = _debug;
-    }
-    Execute() {
-        let memoryCopy = this._memory.Copy();
-        this._debug.AddDebugInfo(memoryCopy);
+    static Execute(context) {
+        let memoryCopy = context.Memory.Copy();
+        context.Debug.AddDebugInfo(memoryCopy);
     }
 }
-MemoryDumpToken.StartChar = '$';
+MemoryDumpToken.Symbol = '$';
