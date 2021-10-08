@@ -9,22 +9,20 @@ export class BFInterpreter {
     constructor(private _memory: Memory, private _output: OutputStream) {
         this._tokenizer = new Tokenizer();
         this._tokenizer.RegisterToken(
-            MemoryDumpToken.StartChar,
-            (context) => new MemoryDumpToken(context.Memory as Memory, context.Debug)
+            MemoryDumpToken.Symbol,
+            () => MemoryDumpToken
         );
     }
 
-    public Execute(code: string, input: string): { Output: string, Debug: number[][] } {
+    public Execute(code: string, input: InputStream): { Output: string, Debug: number[][] } {
         let context = {
             Memory: this._memory,
             Pointer: new Pointer(this._memory),
-            Input: new InputStream(input),
+            Input: input,
             Output: this._output,
             Debug: new DebugInfo()
         };
-        let tokens = this._tokenizer.Tokenize(code, context);
-        for (let token of tokens)
-            token.Execute();
+        this._tokenizer.Tokenize(code, context).Execute(context);
         return {
             Output: context.Output.GetString(),
             Debug: context.Debug.GetDebugInfo()

@@ -1,5 +1,5 @@
 import { BFInterpreter } from './bfinterpreter.js';
-import { OutputStream } from './executioncontext.js';
+import { InputStream, OutputStream } from './executioncontext.js';
 import { MemoryBlockSizes, Memory, SignedMemory } from './memory.js';
 
 interface IHTMLValueElement extends HTMLElement {
@@ -212,7 +212,10 @@ export function InterpreterElementsSetup(
             new SignedMemory(Options.MemorySize, Options.BlockSize)
             : new Memory(Options.MemorySize, Options.BlockSize);
         let interpreter = new BFInterpreter(memory, new OutputStream(Options.EnableAsciiOutput));
-        let {Output: output, Debug: debugInfo} = interpreter.Execute(CodeElement.value, InputElement.value);
+        let {Output: output, Debug: debugInfo} = 
+            interpreter.Execute(
+                CodeElement.value, 
+                new InputStream(InputElement.value));
         OutputElement.value = output;
         if (Options.IsDebugEnabled)
             Debug.DebugInfo = debugInfo;

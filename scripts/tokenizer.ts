@@ -1,73 +1,39 @@
 import * as Tokens from './tokens.js';
 import { IExecutionContext } from './executioncontext.js';
-import { Pointer } from './memory.js';
 
-type TokenConstructor = (context: IExecutionContext) => Tokens.IToken;
+type TokenGenerator = () => Tokens.IToken;
 
 export class Tokenizer {
-    private _tokenConstructors: { [key: string]: TokenConstructor } = {
-        [Tokens.IncrementValueToken.StartChar]: (context) => new Tokens.IncrementValueToken(context.Pointer),
-        [Tokens.IncrementPointerToken.StartChar]: (context) => new Tokens.IncrementPointerToken(context.Pointer),
-        [Tokens.DecrementValueToken.StartChar]: (context) => new Tokens.DecrementValueToken(context.Pointer),
-        [Tokens.DecrementPointerToken.StartChar]: (context) => new Tokens.DecrementPointerToken(context.Pointer),
-        [Tokens.ReadInputToken.StartChar]: (context) => new Tokens.ReadInputToken(context.Pointer, context.Input),
-        [Tokens.WriteOutputToken.StartChar]: (context) => new Tokens.WriteOutputToken(context.Pointer, context.Output)
+    private _tokenConstructors: { [key: string]: TokenGenerator } = {
+        [Tokens.IncrementValueToken.Symbol]: () => Tokens.IncrementValueToken,
+        [Tokens.IncrementPointerToken.Symbol]: () => Tokens.IncrementPointerToken,
+        [Tokens.DecrementValueToken.Symbol]: () => Tokens.DecrementValueToken,
+        [Tokens.DecrementPointerToken.Symbol]: () => Tokens.DecrementPointerToken,
+        [Tokens.ReadInputToken.Symbol]: () => Tokens.ReadInputToken,
+        [Tokens.WriteOutputToken.Symbol]: () => Tokens.WriteOutputToken,
+        [Tokens.EndScopeToken.Symbol]: () => Tokens.EndScopeToken,
+        [Tokens.WhileLoopToken.Symbol]: () => new Tokens.WhileLoopToken()
     };
 
-    private BracketMatching(code: string): boolean {
-        let bracketStack: number = 0;
+    public Tokenize(code: string, context: IExecutionContext): Tokens.IToken {
+        let scope = new Tokens.Scope();
         for (let i = 0; i < code.length; i++) {
-            switch (code.charAt(i))
-            {
-                case Tokens.WhileLoopToken.StartChar:
-                    bracketStack++;
-                    break;
-
-                case Tokens.WhileLoopToken.EndChar:
-                    if (--bracketStack < 0)
-                        return false;
-                    break;
-
-                default:
-                    break;
-            }
-        }
-        return bracketStack === 0;
-    }
-
-    private TokenizeImpl(code: string, context: IExecutionContext): Tokens.IToken[] {
-        let tokens: Tokens.IToken[] = [];
-        for (let i = 0; i < code.length; i++) {
+            //If scope prematurely closes, it's because there's an extra close scope token.
+            if (!scope.HasActiveScope)
+                throw new Error('Imbalanced scopes: no open scope to close.');
             let char = code.charAt(i);
-            switch (char)
-            {
-                case Tokens.WhileLoopToken.StartChar:
-                    let loopTokens = this.TokenizeImpl(code.slice(i + 1), context);
-                    tokens.push(new Tokens.WhileLoopToken(context.Pointer, loopTokens));
-                    //skip bracket and processed tokens, loop increment will skip final bracket
-                    i += 1 + loopTokens.length;
-                    break;
-
-                case Tokens.WhileLoopToken.EndChar:
-                    return tokens;
-
-                default:
-                    let token = this._tokenConstructors[char]?.(context);
-                    if (token)
-                        tokens.push(token);
-                    break;
-            }
+            let token = this._tokenConstructors[char]?.();
+            if (token)
+                scope.Add(token);
         }
-        return tokens;
+        scope.HasActiveScope = false;
+        //If scope didn't close, it's because there's still an open inner scope.
+        if (scope.HasActiveScope)
+            throw new Error('Imbalanced scopes: non-closed scope detected.');
+        return scope;
     }
 
-    public Tokenize(code: string, context: IExecutionContext): Tokens.IToken[] {
-        if (!this.BracketMatching(code))
-            throw new Error(`Imbalanced control flow characters.`);
-        return this.TokenizeImpl(code, context);
-    }
-
-    public RegisterToken(token: string, constructor: TokenConstructor) {
-        this._tokenConstructors[token] = constructor;
+    public RegisterToken(token: string, generator: TokenGenerator) {
+        this._tokenConstructors[token] = generator;
     }
 }

@@ -1,110 +1,120 @@
-import { Pointer, Memory } from './memory.js';
-import { InputStream, OutputStream, DebugInfo } from './executioncontext.js';
+import { IExecutionContext } from './executioncontext.js';
 
 export interface IToken {
-    Execute(): void;
+    Execute(context: IExecutionContext): void;
 }
 
-export class IncrementValueToken implements IToken {
-    static StartChar = '+';
+export class Scope implements IToken {
+    protected _tokens: IToken[] = [];
+    protected _hasActiveScope: boolean = true;
 
-    constructor(protected readonly _pointer: Pointer) { }
+    public get HasActiveScope() {
+        return this._hasActiveScope;
+    }
+    public set HasActiveScope(active: boolean) {
+        if (!active)
+        {
+            let mostRecentToken = this._tokens[this._tokens.length - 1] as Scope;
+            if (mostRecentToken?.HasActiveScope)
+                active = true;
+        }
+        this._hasActiveScope = active;
+    }
+    
 
-    public Execute(): void {
-        this._pointer.Increment();
+    public Add(token: IToken): void {             
+        let mostRecentToken = this._tokens[this._tokens.length - 1] as Scope;
+        if (mostRecentToken?.HasActiveScope)
+            mostRecentToken.Add(token);
+        else if (token instanceof EndScopeToken)
+            this.HasActiveScope = false;
+        else
+            this._tokens.push(token);
+    }
+
+    public Execute(context: IExecutionContext): void {
+        for (let token of this._tokens)
+            token.Execute(context);
     }
 }
 
-export class DecrementValueToken implements IToken {
-    static StartChar = '-';
+export class WhileLoopToken extends Scope {
+    public static Symbol = '[';
 
-    constructor(protected readonly _pointer: Pointer) { }
-
-    public Execute(): void {
-        this._pointer.Decrement();
+    public Execute(context: IExecutionContext): void {
+        let val = context.Pointer.GetValue();
+        while (val !== 0) {
+            super.Execute(context);
+            val = context.Pointer.GetValue();
+        }
     }
 }
 
-export class IncrementPointerToken implements IToken {
-    static StartChar = '>';
+export class EndScopeToken {
+    public static Symbol = ']';
 
-    constructor(protected readonly _pointer: Pointer) { }
+    //Symbol has no effects related to state; purely for control flow.
+    public static Execute(): void { }
+}
 
-    public Execute(): void {
-        this._pointer.MoveRight();
+export class IncrementValueToken {
+    public static Symbol = '+';
+
+    public static Execute(context: IExecutionContext): void {
+        context.Pointer.Increment();
     }
 }
 
-export class DecrementPointerToken implements IToken {
-    static StartChar = '<';
+export class DecrementValueToken {
+    public static Symbol = '-';
 
-    constructor(protected readonly _pointer: Pointer) { }
-
-    public Execute(): void {
-        this._pointer.MoveLeft();
+    public static Execute(context: IExecutionContext): void {
+        context.Pointer.Decrement();
     }
 }
 
-export class ReadInputToken implements IToken {
-    static StartChar = ',';
+export class IncrementPointerToken {
+    public static Symbol = '>';
 
-    constructor(
-        protected readonly _pointer: Pointer, 
-        protected readonly _input: InputStream
-    ) { }
+    public static Execute(context: IExecutionContext): void {
+        context.Pointer.MoveRight();
+    }
+}
 
-    public Execute(): void {
-        let charCode = this._input.ReadNextChar();
+export class DecrementPointerToken {
+    public static Symbol = '<';
+
+    public static Execute(context: IExecutionContext): void {
+        context.Pointer.MoveLeft();
+    }
+}
+
+export class ReadInputToken {
+    public static Symbol = ',';
+
+    public static Execute(context: IExecutionContext): void {
+        let charCode = context.Input.ReadNextChar();
         while (charCode > 0) {
-            this._pointer.Increment();
+            context.Pointer.Increment();
             charCode--;
         }
     }
 }
 
-export class WriteOutputToken implements IToken {
-    static StartChar = '.';
+export class WriteOutputToken {
+    public static Symbol = '.';
 
-    constructor(
-        protected readonly _pointer: Pointer,
-        protected readonly _output: OutputStream
-    ) { }
-
-    public Execute(): void {
-        let charCode = this._pointer.GetValue();
-        this._output.WriteNextCharCode(charCode);
+    public static Execute(context: IExecutionContext): void {
+        let charCode = context.Pointer.GetValue();
+        context.Output.WriteNextCharCode(charCode);
     }
 }
 
-export class WhileLoopToken implements IToken {
-    static StartChar = '[';
-    static EndChar = ']';
+export class MemoryDumpToken {
+    public static Symbol = '$';
 
-    constructor(
-        protected readonly _pointer: Pointer,
-        protected readonly _tokens: IToken[]
-    ) { }
-
-    public Execute(): void {
-        let val = this._pointer.GetValue();
-        while (val !== 0) {
-            for (let token of this._tokens)
-                token.Execute();
-            val = this._pointer.GetValue();
-        }
-    }
-}
-
-export class MemoryDumpToken implements IToken {
-    static StartChar = '$';
-
-    constructor(
-        protected readonly _memory: Memory, 
-        protected readonly _debug: DebugInfo
-    ) { }
-
-    public Execute(): void {
-        let memoryCopy = this._memory.Copy();
-        this._debug.AddDebugInfo(memoryCopy);
+    public static Execute(context: IExecutionContext): void {
+        let memoryCopy = context.Memory.Copy();
+        context.Debug.AddDebugInfo(memoryCopy);
     }
 }
