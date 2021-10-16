@@ -8,14 +8,20 @@ The following is a double ray-casting algorithm and half-planes to determine
 whether a point is in a polygon. The acceptable point ranges are x: 0-9 and y: 0-9.
 
 ### Memory Layout
-> Memory: Pointer movement optimization prioritized.
-> -------------------------------------------------------------------
-> C1 | C2 | X | S2 | Y1 | Y | X2 | X1 | T0 | T1 | T2 | T3 | Y2 | S1 |
-> -------------------------------------------------------------------
+Memory: Pointer movement optimization prioritized.
+```
+ -------------------------------------------------------------------
+ C1 | C2 | X | S2 | Y1 | Y | X2 | X1 | T0 | T1 | T2 | T3 | Y2 | S1 |
+ -------------------------------------------------------------------
+```
+
+### Interpreter Settings
+Memory size (blocks): 14
 
 ### Code
 ```
->>,>>>,>>,,<<<,>>,,>>>>>>,                                        Read test point and first two polygon points
+>>,>>>,>>,,<<<,>>,,>>>>>>,                                        Read test point and 
+                                                                  first two polygon points
 [                                                                 Until end of input
     [<<<<+>+>>>-]<<<[>>>+<<<-]                                    t0 = y2
     <<<<[>>>>+>+<<<<<-]>>>>>[<<<<<+>>>>>-]                        t1 = y
@@ -79,12 +85,12 @@ whether a point is in a polygon. The acceptable point ranges are x: 0-9 and y: 0
 ```
 
 ### Input
-Input is formatted as ab,xy,xy,xy,xy for the points (x,y) that make up the polygon
-bounds and the test point (a,b).
+Input is formatted as ab,xy,xy,xy,... for the test point (a,b) and the points (x,y) 
+that make up the polygon bounds.
 > 33,20,41,44,25,12,20
 
 ### Expected Output
 Output is 1 if the point is within the polygon or 0 if it is not. Priority is given
-to out-of-bounds values rather than on-the-bounds values though inner-vertices are
-properly handled.
+to catching out-of-bounds values rather than on-the-bounds values though inner-vertices 
+are properly handled.
 > 1
