@@ -3,8 +3,19 @@ Typescript interpreter for the Brainfuck language.
 
 Live version at https://rinsho.github.io/BrainfuckInterpreter/index.html
 
+### Interpreter Options
+* Enable memory dump symbol: enables or disables the $ symbol.
+* Convert output to ASCII: adds 48 to the output characters. Makes it easier to output integers.
+* Signed memory: memory range becomes -((2^bits)/2) to ((2^bits)/2) - 1
+
+### Notable Behavior
+* Memory locations are wrap-around by default to enable easier pointer movement.
+    Ex: with 2 blocks of memory, pointer at location 0, '>>' still points to location 0.
+* Increment/Decrement are wrap-around by default.
+    Ex: if a block of 1-byte, unsigned memory is at 255, then '+' wraps it to 0.
+
 ## Example Code
-The following is a double ray-casting algorithm and half-planes to determine
+The following uses a double ray-casting algorithm and half-planes to determine
 whether a point is in a polygon. The acceptable point ranges are x: 0-9 and y: 0-9.
 
 ### Memory Layout
